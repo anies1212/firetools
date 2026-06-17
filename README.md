@@ -70,10 +70,25 @@ The non-Riverpod variant (`RemoteConfigValues`) is the baseline; when
 
 ## GitHub Action
 
-This repo ships a composite action that runs firefreeze in CI. Trigger it with
-`workflow_dispatch` to regenerate code on demand; it surfaces the diff via the
-job summary and exposes a `changed` output so a following step can open a pull
-request (the example workflow does exactly that).
+This repo doubles as a **composite action** (`anies1212/firetools`, defined in
+[`action.yml`](action.yml)). It runs firefreeze in CI to regenerate type-safe
+Remote Config code, then reports the diff. A typical setup triggers it with
+`workflow_dispatch`, surfaces the diff in the job summary, and uses the
+`changed` output to open a pull request — see the
+[full example workflow](examples/workflows/generate-remote-config.yml).
+
+### What the action does
+
+1. Sets up the Dart SDK (skippable when Dart/Flutter is already installed).
+2. Authenticates to Google Cloud and mints an OAuth access token (scope
+   `firebase.remoteconfig`).
+3. Activates `firefreeze` from pub.dev and regenerates code from your
+   `firefreeze.yaml`.
+4. Optionally runs `build_runner` for Freezed/Riverpod parts.
+5. Detects working-tree changes (including newly generated, untracked files),
+   writes the diff to the job summary, and sets the `changed` output.
+
+### Usage
 
 ```yaml
 permissions:
@@ -81,7 +96,8 @@ permissions:
   id-token: write # for Workload Identity Federation
 steps:
   - uses: actions/checkout@v6
-  - uses: anies1212/firetools@v0.2.1
+  - id: firefreeze
+    uses: anies1212/firetools@v0.2.1
     with:
       working-directory: .
       config: firefreeze.yaml
@@ -90,16 +106,48 @@ steps:
       workload-identity-provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
       service-account: ${{ vars.GCP_SERVICE_ACCOUNT }}
       # credentials-json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+  - if: steps.firefreeze.outputs.changed == 'true'
+    run: echo "Remote Config code changed"
 ```
+
+### Inputs
+
+| Input | Default | Description |
+|-------|---------|-------------|
+| `working-directory` | `.` | Directory that contains `firefreeze.yaml` (and the project). |
+| `config` | `firefreeze.yaml` | Path to `firefreeze.yaml`, relative to `working-directory`. |
+| `version` | `''` (latest) | firefreeze version to activate from pub.dev. |
+| `force` | `false` | Pass `--force` to regenerate even when the template is unchanged. |
+| `run-build-runner` | `false` | Run `build_runner build` after generation (for Freezed/Riverpod parts). Requires deps already resolved. |
+| `setup-dart` | `true` | Install the Dart SDK. Set `false` if Dart/Flutter is already set up. |
+| `dart-sdk` | `stable` | Dart SDK version/channel used when `setup-dart` is true. |
+| `access-token` | `''` | Pre-minted OAuth access token used directly as a Bearer credential. When set, the Google Cloud auth step is skipped. |
+| `workload-identity-provider` | `''` | Full identifier of the Workload Identity Provider for keyless auth. |
+| `service-account` | `''` | Service-account email to impersonate with WIF. Required when `workload-identity-provider` is set. |
+| `credentials-json` | `''` | Service-account key JSON (alternative to WIF). Pass via a secret. |
+
+### Outputs
+
+| Output | Description |
+|--------|-------------|
+| `changed` | `true` when generation produced changes in the working tree. Use it to gate a commit/PR step. |
+
+### Authentication
 
 Auth resolves in priority order: `access-token` → Google Cloud auth
 (`workload-identity-provider` **or** `credentials-json`) → ambient ADC. The
 action mints an OAuth access token (scope `firebase.remoteconfig`) and passes it
 to firefreeze via `FIREFREEZE_ACCESS_TOKEN`, so Workload Identity Federation
-works even though `googleapis_auth` cannot consume WIF via ADC directly.
+works even though `googleapis_auth` cannot consume WIF via ADC directly. When
+using WIF, the job must request `id-token: write` permission.
 
-A full copy-paste workflow lives in
-[examples/workflows/generate-remote-config.yml](examples/workflows/generate-remote-config.yml).
+### Committing the diff
+
+The action itself only generates code and reports `changed` — it does not
+commit. The [example workflow](examples/workflows/generate-remote-config.yml)
+pairs it with `peter-evans/create-pull-request` to commit the diff to a branch
+(chosen at dispatch time via a `branch` input) and open a pull request, which
+needs `contents: write` and `pull-requests: write`.
 
 ## Development
 
