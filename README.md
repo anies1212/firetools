@@ -72,7 +72,8 @@ The non-Riverpod variant (`RemoteConfigValues`) is the baseline; when
 
 This repo ships a composite action that runs firefreeze in CI. Trigger it with
 `workflow_dispatch` to regenerate code on demand; it surfaces the diff via the
-job summary and the `changed` output (opening a PR is left to you).
+job summary and exposes a `changed` output so a following step can open a pull
+request (the example workflow does exactly that).
 
 ```yaml
 permissions:
