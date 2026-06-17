@@ -4,7 +4,6 @@ description: >-
   Firebase Remote Config template automatically. Reads parameter value types
   directly from the Remote Config Admin API.
 version: 0.1.0
-publish_to: none
 homepage: https://github.com/anies1212/firetools
 repository: https://github.com/anies1212/firetools/tree/main/packages/firefreeze
 issue_tracker: https://github.com/anies1212/firetools/issues

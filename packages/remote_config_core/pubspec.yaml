@@ -3,7 +3,6 @@ description: >-
   Internal package for Firebase Remote Config template fetching, authentication,
   and type mapping. Used by firefreeze. Not intended for direct use.
 version: 0.1.0
-publish_to: none
 homepage: https://github.com/anies1212/firetools
 repository: https://github.com/anies1212/firetools/tree/main/packages/remote_config_core
 issue_tracker: https://github.com/anies1212/firetools/issues
