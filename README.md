@@ -1,5 +1,9 @@
 # firetools
 
+[![firefreeze](https://img.shields.io/pub/v/firefreeze?label=firefreeze)](https://pub.dev/packages/firefreeze)
+[![remote_config_core](https://img.shields.io/pub/v/remote_config_core?label=remote_config_core)](https://pub.dev/packages/remote_config_core)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 A Dart monorepo that generates code from Firebase Remote Config. It applies the
 same idea as [supatools](https://github.com/anies1212/supatools) (the Supabase
 edition) to Remote Config.

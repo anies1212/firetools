@@ -1,5 +1,8 @@
 # remote_config_core
 
+[![pub package](https://img.shields.io/pub/v/remote_config_core.svg)](https://pub.dev/packages/remote_config_core)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 Shared internals for [firetools](https://github.com/anies1212/firetools).
 
 This package fetches Firebase Remote Config templates from the Admin REST API,

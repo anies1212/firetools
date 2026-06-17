@@ -1,5 +1,8 @@
 # firefreeze
 
+[![pub package](https://img.shields.io/pub/v/firefreeze.svg)](https://pub.dev/packages/firefreeze)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 Generate type-safe Dart code from a Firebase Remote Config template.
 
 `firefreeze` reads the explicit `valueType` (`STRING` / `BOOLEAN` / `NUMBER` /
