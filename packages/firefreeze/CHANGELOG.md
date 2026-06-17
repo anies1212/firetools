@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1
+
+- Format generated Dart with `dart_style` so the output passes
+  `dart format --set-exit-if-changed` in consumer projects (no more long lines
+  in `remote_config_values.dart`). Falls back to unformatted output with a
+  warning if a file cannot be parsed.
+
 ## 0.2.0
 
 - Support authenticating with a pre-minted OAuth access token, via the

@@ -27,7 +27,8 @@ class RemoteConfigValues {
 
   /// Theme configuration
   ThemeConfig get themeConfig => ThemeConfig.fromJson(
-      jsonDecode(_rc.getString('theme_config')) as Map<String, dynamic>);
+        jsonDecode(_rc.getString('theme_config')) as Map<String, dynamic>,
+      );
 }
 
 /// Default values mirrored from the Remote Config template.

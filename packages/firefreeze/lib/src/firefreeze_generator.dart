@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dart_style/dart_style.dart';
 import 'package:remote_config_core/remote_config_core.dart';
 
 import 'accessor_generator.dart';
@@ -110,7 +111,23 @@ class FirefreezeGenerator {
       files['remote_config.dart'] = _barrel(files.keys, config);
     }
 
-    return GenerationResult(files: files, warnings: warnings);
+    // Format Dart output so it passes `dart format --set-exit-if-changed`
+    // in consumer projects. Falls back to the unformatted source if the
+    // content cannot be parsed (should not happen for generated code).
+    final formatter = DartFormatter(
+      languageVersion: DartFormatter.latestLanguageVersion,
+    );
+    final formatted = files.map((path, content) {
+      if (!path.endsWith('.dart')) return MapEntry(path, content);
+      try {
+        return MapEntry(path, formatter.format(content));
+      } catch (_) {
+        warnings.add('Could not format generated file: $path');
+        return MapEntry(path, content);
+      }
+    });
+
+    return GenerationResult(files: formatted, warnings: warnings);
   }
 
   String _barrel(Iterable<String> paths, FirefreezeConfig config) {

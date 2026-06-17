@@ -10,9 +10,8 @@ part 'theme_config.firefreeze.g.dart';
 
 @freezed
 abstract class ThemeConfigPalette with _$ThemeConfigPalette {
-  const factory ThemeConfigPalette({
-    required String accent,
-  }) = _ThemeConfigPalette;
+  const factory ThemeConfigPalette({required String accent}) =
+      _ThemeConfigPalette;
 
   factory ThemeConfigPalette.fromJson(Map<String, dynamic> json) =>
       _$ThemeConfigPaletteFromJson(json);
