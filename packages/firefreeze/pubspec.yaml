@@ -1,0 +1,36 @@
+name: firefreeze
+description: >-
+  Generate type-safe Dart accessors, defaults and Riverpod providers from a
+  Firebase Remote Config template automatically. Reads parameter value types
+  directly from the Remote Config Admin API.
+version: 0.1.0
+publish_to: none
+homepage: https://github.com/anies1212/firetools
+repository: https://github.com/anies1212/firetools/tree/main/packages/firefreeze
+issue_tracker: https://github.com/anies1212/firetools/issues
+
+topics:
+  - firebase
+  - remote-config
+  - code-generation
+  - riverpod
+  - freezed
+
+resolution: workspace
+
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+  remote_config_core: ^0.1.0
+  yaml: ^3.1.2
+  path: ^1.9.0
+  recase: ^4.1.0
+  crypto: ^3.0.6
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.28.0
+
+executables:
+  firefreeze: firefreeze

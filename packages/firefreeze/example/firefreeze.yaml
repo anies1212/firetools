@@ -1,0 +1,20 @@
+# Example firefreeze configuration.
+#
+# project_id and service_account are only needed when fetching from the
+# Admin API. This example runs with `fetch: never` against a pre-seeded
+# template cache so it works offline (see .dart_tool/firefreeze/).
+project_id: ${FIREBASE_PROJECT_ID}
+
+# Path to a service-account JSON key. Leave unset to use Application Default
+# Credentials (run `gcloud auth application-default login`).
+# service_account: $dotenv{GOOGLE_APPLICATION_CREDENTIALS}
+
+output: lib/remote_config
+fetch: never
+
+generate_defaults: true
+json_models: true
+generate_providers: true
+client_provider_import: firebase_remote_config_provider.dart
+
+generate_barrel: true

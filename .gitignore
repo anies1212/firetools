@@ -1,0 +1,19 @@
+.dart_tool/
+# Keep the example's seeded template cache so it runs offline.
+!packages/firefreeze/example/.dart_tool/
+!packages/firefreeze/example/.dart_tool/firefreeze/
+!packages/firefreeze/example/.dart_tool/firefreeze/template_cache.json
+# param_hashes.json is a derived incremental-generation cache; regenerated on run.
+packages/firefreeze/example/.dart_tool/firefreeze/param_hashes.json
+.packages
+build/
+pubspec.lock
+.DS_Store
+*.iml
+.idea/
+
+# secrets / credentials — never commit
+.env
+.env.*
+*service-account*.json
+*credentials*.json
