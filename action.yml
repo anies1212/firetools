@@ -117,16 +117,17 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       run: |
         set -euo pipefail
-        if [ -n "$(git status --porcelain)" ]; then
+        # Intent-to-add so newly generated (untracked) files appear in the diff.
+        git add -N . >/dev/null 2>&1 || true
+        if git diff --quiet; then
+          echo "changed=false" >> "$GITHUB_OUTPUT"
+          echo "firefreeze — no changes." >> "$GITHUB_STEP_SUMMARY"
+        else
           echo "changed=true" >> "$GITHUB_OUTPUT"
           {
             echo "### firefreeze — generated changes";
             echo '```diff';
             git --no-pager diff;
-            git --no-pager diff --cached;
             echo '```';
           } >> "$GITHUB_STEP_SUMMARY"
-        else
-          echo "changed=false" >> "$GITHUB_OUTPUT"
-          echo "firefreeze — no changes." >> "$GITHUB_STEP_SUMMARY"
         fi

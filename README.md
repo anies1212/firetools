@@ -80,7 +80,7 @@ permissions:
   id-token: write # for Workload Identity Federation
 steps:
   - uses: actions/checkout@v6
-  - uses: anies1212/firetools@v0.2.0
+  - uses: anies1212/firetools@v0.2.1
     with:
       working-directory: .
       config: firefreeze.yaml
