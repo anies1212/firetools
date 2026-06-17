@@ -97,7 +97,7 @@ permissions:
 steps:
   - uses: actions/checkout@v6
   - id: firefreeze
-    uses: anies1212/firetools@v0.2.1
+    uses: anies1212/firetools@v0 # tracks the latest v0; pin a patch with @v0.2.3
     with:
       working-directory: .
       config: firefreeze.yaml
@@ -131,6 +131,13 @@ steps:
 | Output | Description |
 |--------|-------------|
 | `changed` | `true` when generation produced changes in the working tree. Use it to gate a commit/PR step. |
+
+### Versioning
+
+The action is published with semver tags. Reference it by the moving major tag
+`@v0` to track the latest `v0.x` release automatically, or pin an exact patch
+(e.g. `@v0.2.3`) for a fully reproducible build. The `@v0` tag is re-pointed to
+each new release.
 
 ### Authentication
 
