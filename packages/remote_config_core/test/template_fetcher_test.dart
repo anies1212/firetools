@@ -33,6 +33,25 @@ void main() {
       expect(template.parameters.single.valueType, ParameterValueType.boolean);
     });
 
+    test('attaches the access token as a Bearer credential', () async {
+      // Arrange
+      final captured = <String>[];
+      final fetcher = TemplateFetcher(
+        projectId: 'demo',
+        accessToken: 'test-token',
+        clientFactory: () async => MockClient((req) async {
+          captured.add(req.headers['Authorization'] ?? '');
+          return http.Response(jsonEncode({'parameters': {}}), 200);
+        }),
+      );
+
+      // Act
+      await fetcher.fetch();
+
+      // Assert
+      expect(captured.single, 'Bearer test-token');
+    });
+
     test('throws with body on non-200 responses', () async {
       final fetcher = TemplateFetcher(
         projectId: 'demo',

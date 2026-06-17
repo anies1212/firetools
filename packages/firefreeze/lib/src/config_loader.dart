@@ -11,6 +11,12 @@ class FirefreezeConfig {
   /// Path to a service-account JSON key. When null, ADC is used.
   final String? serviceAccount;
 
+  /// A pre-minted OAuth access token used directly as a Bearer credential.
+  ///
+  /// Resolved from `access_token` in the config or the `FIREFREEZE_ACCESS_TOKEN`
+  /// environment variable. Takes precedence over [serviceAccount] and ADC.
+  final String? accessToken;
+
   /// Output directory for generated files.
   final String output;
 
@@ -40,6 +46,7 @@ class FirefreezeConfig {
   const FirefreezeConfig({
     this.projectId,
     this.serviceAccount,
+    this.accessToken,
     this.output = 'lib/remote_config',
     this.fetch = FetchMode.always,
     this.generateDefaults = true,
@@ -98,6 +105,8 @@ class ConfigLoader extends BaseConfigLoader {
     return FirefreezeConfig(
       projectId: resolveValue(yaml['project_id']?.toString()),
       serviceAccount: resolveValue(yaml['service_account']?.toString()),
+      accessToken: resolveValue(yaml['access_token']?.toString()) ??
+          Platform.environment['FIREFREEZE_ACCESS_TOKEN'],
       output: yaml['output']?.toString() ?? 'lib/remote_config',
       fetch: parseFetchMode(yaml['fetch']?.toString()),
       generateDefaults: yaml['generate_defaults'] != false,

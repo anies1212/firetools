@@ -68,6 +68,38 @@ The non-Riverpod variant (`RemoteConfigValues`) is the baseline; when
 `generate_providers: true`, Riverpod providers are generated in addition. See
 [packages/firefreeze/example](packages/firefreeze/example) for real output.
 
+## GitHub Action
+
+This repo ships a composite action that runs firefreeze in CI. Trigger it with
+`workflow_dispatch` to regenerate code on demand; it surfaces the diff via the
+job summary and the `changed` output (opening a PR is left to you).
+
+```yaml
+permissions:
+  contents: read
+  id-token: write # for Workload Identity Federation
+steps:
+  - uses: actions/checkout@v6
+  - uses: anies1212/firetools@v0.2.0
+    with:
+      working-directory: .
+      config: firefreeze.yaml
+      version: ^0.2.0
+      # Auth — pick one:
+      workload-identity-provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+      service-account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+      # credentials-json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+```
+
+Auth resolves in priority order: `access-token` → Google Cloud auth
+(`workload-identity-provider` **or** `credentials-json`) → ambient ADC. The
+action mints an OAuth access token (scope `firebase.remoteconfig`) and passes it
+to firefreeze via `FIREFREEZE_ACCESS_TOKEN`, so Workload Identity Federation
+works even though `googleapis_auth` cannot consume WIF via ADC directly.
+
+A full copy-paste workflow lives in
+[examples/workflows/generate-remote-config.yml](examples/workflows/generate-remote-config.yml).
+
 ## Development
 
 ```bash

@@ -1,0 +1,132 @@
+name: 'firefreeze'
+description: >-
+  Generate type-safe Dart code from a Firebase Remote Config template using
+  firefreeze. Authenticates via Workload Identity Federation, a service-account
+  key, or a pre-minted access token.
+branding:
+  icon: 'zap'
+  color: 'orange'
+
+inputs:
+  working-directory:
+    description: 'Directory that contains firefreeze.yaml (and the project).'
+    required: false
+    default: '.'
+  config:
+    description: 'Path to firefreeze.yaml, relative to working-directory.'
+    required: false
+    default: 'firefreeze.yaml'
+  version:
+    description: 'firefreeze version to activate from pub.dev. Empty = latest.'
+    required: false
+    default: ''
+  force:
+    description: 'Pass --force to regenerate even when the template is unchanged.'
+    required: false
+    default: 'false'
+  run-build-runner:
+    description: >-
+      Run `dart run build_runner build` after generation (for Freezed/Riverpod
+      parts). The caller must have already resolved dependencies (pub get) with
+      a matching SDK.
+    required: false
+    default: 'false'
+  setup-dart:
+    description: 'Install the Dart SDK. Set false if Dart/Flutter is already set up.'
+    required: false
+    default: 'true'
+  dart-sdk:
+    description: 'Dart SDK version/channel used when setup-dart is true.'
+    required: false
+    default: 'stable'
+  access-token:
+    description: >-
+      Pre-minted OAuth access token used directly as a Bearer credential.
+      When set, the Google Cloud auth step is skipped.
+    required: false
+    default: ''
+  workload-identity-provider:
+    description: >-
+      Full identifier of the Workload Identity Provider for keyless auth, e.g.
+      projects/123/locations/global/workloadIdentityPools/POOL/providers/PROVIDER.
+    required: false
+    default: ''
+  service-account:
+    description: >-
+      Service-account email to impersonate with Workload Identity Federation.
+      Required when workload-identity-provider is set.
+    required: false
+    default: ''
+  credentials-json:
+    description: >-
+      Service-account key JSON (alternative to Workload Identity Federation).
+      Pass via a secret.
+    required: false
+    default: ''
+
+outputs:
+  changed:
+    description: 'true when generation produced changes in the working tree.'
+    value: ${{ steps.diff.outputs.changed }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Dart
+      if: ${{ inputs.setup-dart == 'true' }}
+      uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260 # v1.7.2
+      with:
+        sdk: ${{ inputs.dart-sdk }}
+
+    - name: Authenticate to Google Cloud
+      id: gcp-auth
+      if: ${{ inputs.access-token == '' && (inputs.workload-identity-provider != '' || inputs.credentials-json != '') }}
+      uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+      with:
+        workload_identity_provider: ${{ inputs.workload-identity-provider }}
+        service_account: ${{ inputs.service-account }}
+        credentials_json: ${{ inputs.credentials-json }}
+        token_format: 'access_token'
+        access_token_scopes: 'https://www.googleapis.com/auth/firebase.remoteconfig'
+
+    - name: Run firefreeze
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        FIREFREEZE_ACCESS_TOKEN: ${{ inputs.access-token != '' && inputs.access-token || steps.gcp-auth.outputs.access_token }}
+      run: |
+        set -euo pipefail
+        if [ -n "${{ inputs.version }}" ]; then
+          dart pub global activate firefreeze "${{ inputs.version }}"
+        else
+          dart pub global activate firefreeze
+        fi
+        args=(--config "${{ inputs.config }}")
+        if [ "${{ inputs.force }}" = "true" ]; then args+=(--force); fi
+        dart pub global run firefreeze "${args[@]}"
+
+    - name: Run build_runner
+      if: ${{ inputs.run-build-runner == 'true' }}
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: dart run build_runner build --delete-conflicting-outputs
+
+    - name: Detect changes
+      id: diff
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        set -euo pipefail
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          {
+            echo "### firefreeze — generated changes";
+            echo '```diff';
+            git --no-pager diff;
+            git --no-pager diff --cached;
+            echo '```';
+          } >> "$GITHUB_STEP_SUMMARY"
+        else
+          echo "changed=false" >> "$GITHUB_OUTPUT"
+          echo "firefreeze — no changes." >> "$GITHUB_STEP_SUMMARY"
+        fi

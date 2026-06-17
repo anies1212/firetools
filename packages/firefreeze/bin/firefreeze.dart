@@ -13,14 +13,16 @@ import 'package:remote_config_core/remote_config_core.dart';
 /// Usage:
 ///   dart run firefreeze
 ///   dart run firefreeze --force
+///   dart run firefreeze --config path/to/firefreeze.yaml
 Future<void> main(List<String> args) async {
   final force = args.contains('--force') || args.contains('-f');
+  final configPath = _argValue(args, '--config') ?? 'firefreeze.yaml';
 
   print('🔄 firefreeze: Syncing Remote Config template...');
 
-  final config = await ConfigLoader().loadConfig();
+  final config = await ConfigLoader().loadConfig(configPath);
   if (config == null) {
-    stderr.writeln('❌ Error: firefreeze.yaml not found.');
+    stderr.writeln('❌ Error: $configPath not found.');
     exit(1);
   }
 
@@ -79,6 +81,16 @@ Future<void> main(List<String> args) async {
   }
 }
 
+/// Reads the value following [flag] (`--flag value` or `--flag=value`).
+String? _argValue(List<String> args, String flag) {
+  for (var i = 0; i < args.length; i++) {
+    final arg = args[i];
+    if (arg == flag && i + 1 < args.length) return args[i + 1];
+    if (arg.startsWith('$flag=')) return arg.substring(flag.length + 1);
+  }
+  return null;
+}
+
 /// Resolves the template per fetch mode, with cache fallback on fetch failure.
 Future<RemoteConfigTemplate?> _resolveTemplate(
   FirefreezeConfig config,
@@ -109,6 +121,7 @@ Future<RemoteConfigTemplate?> _resolveTemplate(
   final fetcher = TemplateFetcher(
     projectId: config.projectId!,
     serviceAccountPath: config.serviceAccount,
+    accessToken: config.accessToken,
   );
   try {
     print('🌐 Fetching template for project ${config.projectId}...');

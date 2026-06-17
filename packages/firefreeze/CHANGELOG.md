@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0
+
+- Support authenticating with a pre-minted OAuth access token, via the
+  `access_token` config field or the `FIREFREEZE_ACCESS_TOKEN` environment
+  variable. Takes precedence over `service_account` and ADC, and unblocks
+  Workload Identity Federation in CI (see the bundled GitHub Action).
+
 ## 0.1.0
 
 - Initial release.
